@@ -1,0 +1,15 @@
+# Extra Myself Direct Rules
+# 多邻国
+DOMAIN-SUFFIX,duolingo.cn
+DOMAIN-SUFFIX,duolingo.com
+
+# PicoPico
+DOMAIN-SUFFIX,picopi.cn
+DOMAIN-SUFFIX,xintiaotime.com
+
+# 坚果云
+DOMAIN-SUFFIX,gdfgq.club
+DOMAIN-SUFFIX,jianguopuzi.com
+DOMAIN-SUFFIX,jianguoyun.com
+DOMAIN-SUFFIX,nutstore.net
+DOMAIN-SUFFIX,nutstorehq.com
