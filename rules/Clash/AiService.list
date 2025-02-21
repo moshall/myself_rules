@@ -1,6 +1,7 @@
-# AI Services Rules - Updated on 2025-02-21 06:37:17
+# AI Services Rules - Updated on 2025-02-21 15:36:50
 
 # OpenAI
+# Source: OpenAI.list
 # NAME: OpenAI
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -50,6 +51,7 @@ IP-ASN,20473,no-resolve
 
 
 # Claude
+# Source: Claude.list
 # NAME: Claude
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
@@ -63,6 +65,7 @@ DOMAIN-SUFFIX,claude.ai
 
 
 # Gemini
+# Source: Gemini.list
 # NAME: Gemini
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
