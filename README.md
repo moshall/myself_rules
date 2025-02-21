@@ -1,0 +1,2 @@
+# myself_rules
+个人维护的Quanx和Shadowrocket规则
