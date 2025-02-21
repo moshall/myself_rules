@@ -7,12 +7,26 @@ import logging
 from datetime import datetime
 import json
 import re
+import time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
+# 配置重试策略
+retry_strategy = Retry(
+    total=5,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session = requests.Session()
+session.mount("https://", adapter)
+session.mount("http://", adapter)
 
 # 基础配置
 BASE_URL = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule"
@@ -34,9 +48,16 @@ def get_directory_contents(path):
     try:
         url = f"{API_BASE_URL}/{path}"
         headers = {"Accept": "application/vnd.github.v3+json"}
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.json()
+        for attempt in range(3):  # 最多重试3次
+            try:
+                response = session.get(url, headers=headers)
+                response.raise_for_status()
+                return response.json()
+            except requests.exceptions.RequestException as e:
+                if attempt == 2:  # 最后一次尝试
+                    raise
+                time.sleep(2 ** attempt)  # 指数退避
+        return []
     except Exception as e:
         logging.error(f"获取目录内容失败 {path}: {str(e)}")
         return []
@@ -44,12 +65,18 @@ def get_directory_contents(path):
 def download_file(url, local_path):
     """下载文件并保存到本地"""
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
-        with open(local_path, 'w', encoding='utf-8') as f:
-            f.write(response.text)
-        return True
+        for attempt in range(3):  # 最多重试3次
+            try:
+                response = session.get(url)
+                response.raise_for_status()
+                os.makedirs(os.path.dirname(local_path), exist_ok=True)
+                with open(local_path, 'w', encoding='utf-8') as f:
+                    f.write(response.text)
+                return True
+            except requests.exceptions.RequestException as e:
+                if attempt == 2:  # 最后一次尝试
+                    raise
+                time.sleep(2 ** attempt)  # 指数退避
     except Exception as e:
         logging.error(f"下载文件失败 {url}: {str(e)}")
         return False
@@ -62,17 +89,21 @@ def download_directory(platform, rule):
     if not contents:
         return False
     
+    success = True
     for item in contents:
         if item['type'] == 'file':
             download_url = item['download_url']
             local_path = os.path.join(LOCAL_RULES_DIR, platform, rule, item['name'])
             if download_file(download_url, local_path):
                 logging.info(f"成功下载文件: {item['name']}")
+            else:
+                success = False
         elif item['type'] == 'dir':
             sub_path = os.path.join(platform, rule, item['name'])
-            download_directory(platform, sub_path)
+            if not download_directory(platform, sub_path):
+                success = False
     
-    return True
+    return success
 
 def merge_ai_rules(platform):
     """合并AI相关规则"""
@@ -86,10 +117,13 @@ def merge_ai_rules(platform):
             merged_content += f"\n# {rule}\n"
             for item in contents:
                 if item['type'] == 'file' and item['name'].endswith('.list'):
-                    response = requests.get(item['download_url'])
-                    if response.status_code == 200:
-                        merged_content += f"# Source: {item['name']}\n"
-                        merged_content += response.text + "\n"
+                    try:
+                        response = session.get(item['download_url'])
+                        if response.status_code == 200:
+                            merged_content += f"# Source: {item['name']}\n"
+                            merged_content += response.text + "\n"
+                    except Exception as e:
+                        logging.error(f"下载AI规则失败 {item['name']}: {str(e)}")
     
     output_path = f"{LOCAL_RULES_DIR}/{platform}/AiService.list"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -129,6 +163,8 @@ def main():
             logging.info(f"下载 {rule} 规则目录...")
             if download_directory(platform, rule):
                 logging.info(f"成功更新 {rule} 规则目录")
+            else:
+                logging.warning(f"更新 {rule} 规则目录时发生错误")
         
         # 合并AI规则
         logging.info(f"合并 {platform} AI规则...")
