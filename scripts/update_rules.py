@@ -17,6 +17,9 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# GitHub Token（从环境变量获取）
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+
 # 配置重试策略
 retry_strategy = Retry(
     total=5,
@@ -27,6 +30,10 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 session = requests.Session()
 session.mount("https://", adapter)
 session.mount("http://", adapter)
+
+# 如果有GitHub Token，添加到请求头
+if GITHUB_TOKEN:
+    session.headers.update({'Authorization': f'token {GITHUB_TOKEN}'})
 
 # 基础配置
 BASE_URL = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule"
@@ -48,10 +55,23 @@ def get_directory_contents(path):
     try:
         url = f"{API_BASE_URL}/{path}"
         headers = {"Accept": "application/vnd.github.v3+json"}
+        if GITHUB_TOKEN:
+            headers["Authorization"] = f"token {GITHUB_TOKEN}"
+        
         for attempt in range(3):  # 最多重试3次
             try:
                 response = session.get(url, headers=headers)
                 response.raise_for_status()
+                
+                # 如果遇到API限制，等待一段时间
+                if response.headers.get('X-RateLimit-Remaining') == '0':
+                    reset_time = int(response.headers.get('X-RateLimit-Reset', 0))
+                    wait_time = reset_time - int(time.time()) + 1
+                    if wait_time > 0:
+                        logging.warning(f"API速率限制，等待 {wait_time} 秒...")
+                        time.sleep(wait_time)
+                        continue
+                
                 return response.json()
             except requests.exceptions.RequestException as e:
                 if attempt == 2:  # 最后一次尝试
@@ -67,8 +87,22 @@ def download_file(url, local_path):
     try:
         for attempt in range(3):  # 最多重试3次
             try:
-                response = session.get(url)
+                headers = {}
+                if GITHUB_TOKEN:
+                    headers["Authorization"] = f"token {GITHUB_TOKEN}"
+                
+                response = session.get(url, headers=headers)
                 response.raise_for_status()
+                
+                # 如果遇到API限制，等待一段时间
+                if response.headers.get('X-RateLimit-Remaining') == '0':
+                    reset_time = int(response.headers.get('X-RateLimit-Reset', 0))
+                    wait_time = reset_time - int(time.time()) + 1
+                    if wait_time > 0:
+                        logging.warning(f"API速率限制，等待 {wait_time} 秒...")
+                        time.sleep(wait_time)
+                        continue
+                
                 os.makedirs(os.path.dirname(local_path), exist_ok=True)
                 with open(local_path, 'w', encoding='utf-8') as f:
                     f.write(response.text)
@@ -151,7 +185,10 @@ def merge_ai_rules(platform):
             for item in contents:
                 if item['type'] == 'file' and item['name'].endswith('.list'):
                     try:
-                        response = session.get(item['download_url'])
+                        headers = {}
+                        if GITHUB_TOKEN:
+                            headers["Authorization"] = f"token {GITHUB_TOKEN}"
+                        response = session.get(item['download_url'], headers=headers)
                         if response.status_code == 200:
                             merged_content += f"# Source: {item['name']}\n"
                             merged_content += response.text + "\n"
@@ -206,6 +243,9 @@ def cleanup_root_lists(platform):
 
 def main():
     """主函数"""
+    if not GITHUB_TOKEN:
+        logging.warning("未设置GITHUB_TOKEN，可能会遇到API限制")
+    
     for platform in PLATFORMS:
         logging.info(f"开始更新 {platform} 规则...")
         
