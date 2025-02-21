@@ -30,7 +30,7 @@ jobs:
         
     - name: Update rules
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       run: python scripts/update_rules.py
         
     - name: Commit changes
