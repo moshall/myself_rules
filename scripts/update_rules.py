@@ -105,8 +105,41 @@ def download_directory(platform, rule):
     
     return success
 
+def create_readme(platform, rule_name, description):
+    """创建README文件"""
+    content = f"""# {rule_name}
+
+## 前言
+
+本项目的{rule_name}规则由《规则生成器》自动整合与去重。
+
+定时更新时间：每天4:00和16:00。
+
+## 规则说明
+
+{description}
+
+## 规则统计
+
+总计规则数：根据实际规则数量自动更新
+
+### {platform}
+
+规则文件：{rule_name}.list
+
+更新时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+"""
+    
+    output_path = os.path.join(LOCAL_RULES_DIR, platform, rule_name, "README.md")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+
 def merge_ai_rules(platform):
     """合并AI相关规则"""
+    output_dir = os.path.join(LOCAL_RULES_DIR, platform, "AiService")
+    os.makedirs(output_dir, exist_ok=True)
+    
     merged_content = f"# AI Services Rules - Updated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     
     for rule in AI_RULES:
@@ -125,13 +158,19 @@ def merge_ai_rules(platform):
                     except Exception as e:
                         logging.error(f"下载AI规则失败 {item['name']}: {str(e)}")
     
-    output_path = f"{LOCAL_RULES_DIR}/{platform}/AiService.list"
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # 保存合并后的规则文件
+    output_path = os.path.join(output_dir, "AiService.list")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(merged_content)
+    
+    # 创建README文件
+    create_readme(platform, "AiService", "整合了各大AI服务的分流规则，包括但不限于：OpenAI（ChatGPT）、Claude、Google Gemini等。")
 
 def create_extra_myself_direct(platform):
     """创建自定义直连规则"""
+    output_dir = os.path.join(LOCAL_RULES_DIR, platform, "Extra_myself_direct")
+    os.makedirs(output_dir, exist_ok=True)
+    
     content = """# Extra Myself Direct Rules
 # 多邻国
 DOMAIN-SUFFIX,duolingo.cn
@@ -148,10 +187,22 @@ DOMAIN-SUFFIX,jianguoyun.com
 DOMAIN-SUFFIX,nutstore.net
 DOMAIN-SUFFIX,nutstorehq.com"""
 
-    output_path = f"{LOCAL_RULES_DIR}/{platform}/Extra_myself_direct.list"
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # 保存规则文件
+    output_path = os.path.join(output_dir, "Extra_myself_direct.list")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(content)
+    
+    # 创建README文件
+    create_readme(platform, "Extra_myself_direct", "个人自定义的直连规则，包含常用的应用和服务。")
+
+def cleanup_root_lists(platform):
+    """清理根目录下的.list文件"""
+    platform_dir = os.path.join(LOCAL_RULES_DIR, platform)
+    if os.path.exists(platform_dir):
+        for file in os.listdir(platform_dir):
+            if file.endswith('.list') and os.path.isfile(os.path.join(platform_dir, file)):
+                os.remove(os.path.join(platform_dir, file))
+                logging.info(f"删除根目录规则文件: {file}")
 
 def main():
     """主函数"""
@@ -173,6 +224,10 @@ def main():
         # 创建自定义规则
         logging.info(f"创建 {platform} 自定义规则...")
         create_extra_myself_direct(platform)
+        
+        # 清理根目录下的.list文件
+        logging.info(f"清理 {platform} 根目录下的规则文件...")
+        cleanup_root_lists(platform)
     
     logging.info("规则更新完成！")
 
