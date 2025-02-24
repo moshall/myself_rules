@@ -25,19 +25,20 @@ jobs:
           # 确保我们在main分支上
           git checkout main
           
-          # 复制需要同步的文件到临时目录
-          mkdir -p /tmp/sync_files
+          # 复制需要同步的文件到临时目录，保持目录结构
+          mkdir -p /tmp/sync_files/docs
           cp -r config rules /tmp/sync_files/
+          cp -r config rules /tmp/sync_files/docs/
           
           # 切换到gh-pages分支
           git checkout gh-pages
           
-          # 删除旧文件并复制新文件
-          rm -rf config rules
+          # 删除旧文件并复制新文件，保持目录结构
+          rm -rf config rules docs/config docs/rules
           cp -r /tmp/sync_files/* .
           
           # 添加更改
-          git add config rules
+          git add config rules docs
           
           # 如果有更改则提交
           if git diff --staged --quiet; then
