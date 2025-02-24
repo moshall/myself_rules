@@ -10,6 +10,7 @@ import re
 import time
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import hashlib
 
 # 配置日志
 logging.basicConfig(
@@ -169,10 +170,54 @@ def create_readme(platform, rule_name, description):
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
+def get_file_hash(file_path):
+    """获取文件的MD5哈希值"""
+    if not os.path.exists(file_path):
+        return None
+    with open(file_path, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+def should_update_ai_rules(platform):
+    """检查AI规则是否需要更新"""
+    has_updates = False
+    
+    for rule in AI_RULES:
+        rule_path = f"{platform}/{rule}"
+        contents = get_directory_contents(rule_path)
+        
+        if contents:
+            for item in contents:
+                if item['type'] == 'file' and item['name'].endswith('.list'):
+                    try:
+                        headers = {}
+                        if GITHUB_TOKEN:
+                            headers["Authorization"] = f"token {GITHUB_TOKEN}"
+                        response = session.get(item['download_url'], headers=headers)
+                        if response.status_code == 200:
+                            # 如果任何一个源文件有更新，就需要更新合并文件
+                            has_updates = True
+                            break
+                    except Exception as e:
+                        logging.error(f"检查AI规则更新失败 {item['name']}: {str(e)}")
+                        continue
+        
+        if has_updates:
+            break
+    
+    return has_updates
+
 def merge_ai_rules(platform):
     """合并AI相关规则"""
     output_dir = os.path.join(LOCAL_RULES_DIR, platform, "AiService")
+    output_path = os.path.join(output_dir, "AiService.list")
+    
+    # 如果目录不存在，创建目录
     os.makedirs(output_dir, exist_ok=True)
+    
+    # 检查是否需要更新
+    if not should_update_ai_rules(platform):
+        logging.info(f"{platform} AI规则无更新，跳过合并")
+        return
     
     merged_content = f"# AI Services Rules - Updated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
     
@@ -196,16 +241,24 @@ def merge_ai_rules(platform):
                         logging.error(f"下载AI规则失败 {item['name']}: {str(e)}")
     
     # 保存合并后的规则文件
-    output_path = os.path.join(output_dir, "AiService.list")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(merged_content)
     
-    # 创建README文件
-    create_readme(platform, "AiService", "整合了各大AI服务的分流规则，包括但不限于：OpenAI（ChatGPT）、Claude、Google Gemini等。")
+    # 只在首次创建时添加README文件
+    readme_path = os.path.join(output_dir, "README.md")
+    if not os.path.exists(readme_path):
+        create_readme(platform, "AiService", "整合了各大AI服务的分流规则，包括但不限于：OpenAI（ChatGPT）、Claude、Google Gemini等。")
 
 def create_extra_myself_direct(platform):
     """创建自定义直连规则"""
     output_dir = os.path.join(LOCAL_RULES_DIR, platform, "Extra_myself_direct")
+    output_path = os.path.join(output_dir, "Extra_myself_direct.list")
+    
+    # 如果文件已存在，直接返回
+    if os.path.exists(output_path):
+        logging.info(f"{platform} Extra_myself_direct规则已存在，跳过创建")
+        return
+    
     os.makedirs(output_dir, exist_ok=True)
     
     content = """# Extra Myself Direct Rules
@@ -225,12 +278,13 @@ DOMAIN-SUFFIX,nutstore.net
 DOMAIN-SUFFIX,nutstorehq.com"""
 
     # 保存规则文件
-    output_path = os.path.join(output_dir, "Extra_myself_direct.list")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(content)
     
-    # 创建README文件
-    create_readme(platform, "Extra_myself_direct", "个人自定义的直连规则，包含常用的应用和服务。")
+    # 只在首次创建时添加README文件
+    readme_path = os.path.join(output_dir, "README.md")
+    if not os.path.exists(readme_path):
+        create_readme(platform, "Extra_myself_direct", "个人自定义的直连规则，包含常用的应用和服务。")
 
 def cleanup_root_lists(platform):
     """清理根目录下的.list文件"""
