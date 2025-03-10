@@ -25,16 +25,69 @@ jobs:
           # 确保我们在main分支上
           git checkout main
           
-          # 复制需要同步的文件到临时目录，保持目录结构
+          # 创建临时目录
           mkdir -p /tmp/sync_files/docs
-          cp -r config rules /tmp/sync_files/
-          cp -r config rules /tmp/sync_files/docs/
+          
+          # 函数：检查文件是否真正改变（忽略时间戳行）
+          check_real_changes() {
+            local file1="$1"
+            local file2="$2"
+            if [ ! -f "$file1" ] || [ ! -f "$file2" ]; then
+              return 0  # 如果文件不存在，视为有改变
+            fi
+            # 去除更新时间行后比较文件
+            diff <(grep -v "更新时间" "$file1") <(grep -v "更新时间" "$file2") > /dev/null
+            return $?
+          }
+          
+          # 函数：智能复制文件
+          smart_copy() {
+            local src="$1"
+            local dst="$2"
+            local dst_dir=$(dirname "$dst")
+            
+            # 确保目标目录存在
+            mkdir -p "$dst_dir"
+            
+            # 如果文件确实发生了变化，才进行复制
+            if check_real_changes "$src" "$dst"; then
+              echo "Copying $src to $dst (content changed)"
+              cp "$src" "$dst"
+            else
+              echo "Skipping $src (no real changes)"
+            fi
+          }
+          
+          # 遍历并智能复制文件
+          process_directory() {
+            local src_dir="$1"
+            local tmp_dir="$2"
+            local docs_dir="$3"
+            
+            find "$src_dir" -type f -name "*.list" -o -name "*.conf" | while read src_file; do
+              # 计算相对路径
+              local rel_path="${src_file#$src_dir/}"
+              local tmp_path="$tmp_dir/$rel_path"
+              local docs_path="$docs_dir/$rel_path"
+              
+              # 智能复制到临时目录
+              smart_copy "$src_file" "$tmp_path"
+              # 智能复制到docs目录
+              smart_copy "$src_file" "$docs_path"
+            done
+          }
+          
+          # 处理config和rules目录
+          process_directory "config" "/tmp/sync_files/config" "/tmp/sync_files/docs/config"
+          process_directory "rules" "/tmp/sync_files/rules" "/tmp/sync_files/docs/rules"
           
           # 切换到gh-pages分支
           git checkout gh-pages
           
-          # 删除旧文件并复制新文件，保持目录结构
+          # 删除旧文件
           rm -rf config rules docs/config docs/rules
+          
+          # 复制新文件
           cp -r /tmp/sync_files/* .
           
           # 添加更改
@@ -44,6 +97,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Sync: Update from main branch"
+            git commit -m "Sync: Update from main branch (only changed files)"
             git push origin gh-pages
           fi
