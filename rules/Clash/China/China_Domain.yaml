@@ -1,13 +1,13 @@
 # NAME: China
 # AUTHOR: blackmatrix7
 # REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2024-11-17 02:12:02
+# UPDATED: 2025-03-05 02:13:20
 # DOMAIN: 15
 # DOMAIN-KEYWORD: 9
-# DOMAIN-SUFFIX: 3676
+# DOMAIN-SUFFIX: 3672
 # IP-CIDR: 17
 # IP-CIDR6: 4
-# TOTAL: 3721
+# TOTAL: 3717
 payload:
   - 'analytics.strava.com'
   - 'blzddist1-a.akamaihd.net'
@@ -312,7 +312,6 @@ payload:
   - '+.acctdns.net'
   - '+.acetaffy.club'
   - '+.acfun.tv'
-  - '+.acg.rip'
   - '+.acg.tv'
   - '+.acgvideo.com'
   - '+.acm.org'
@@ -1796,7 +1795,6 @@ payload:
   - '+.ipplus360.com'
   - '+.iprdp.net'
   - '+.ipssh.net'
-  - '+.ipv6-test.com'
   - '+.iq.com'
   - '+.iqiyi.com'
   - '+.iqiyipic.com'
@@ -3037,8 +3035,6 @@ payload:
   - '+.tenpay.com'
   - '+.tenxcloud.com'
   - '+.test-cignacmb.com'
-  - '+.test-ipv4.com'
-  - '+.test-ipv6.com'
   - '+.testwaf.com'
   - '+.texasholdemcup.com'
   - '+.texasholdemcup.net'
