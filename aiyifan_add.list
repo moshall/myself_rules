@@ -1,7 +1,50 @@
 # 规则名称: 爱壹帆
 DOMAIN-SUFFIX,yfsp.tv
 DOMAIN-SUFFIX,pipecdn.vip
-DOMAIN-SUFFIX,bbbdata.xyz
+# chunklist_暂无规律系列
 DOMAIN-SUFFIX,uutestc.com
+DOMAIN-SUFFIX,waytogone.com
+DOMAIN-SUFFIX,doaminwhole.com
+DOMAIN-SUFFIX,newyvpd.com
+DOMAIN-SUFFIX,bytwogeneral.com
+DOMAIN-SUFFIX,bitwayeat.com
+DOMAIN-SUFFIX,bbbdata.xyz
+# chunklist_tf系列
+DOMAIN-SUFFIX,tfbgaaa.com
+DOMAIN-SUFFIX,tfbgbbb.com
+DOMAIN-SUFFIX,tfbgccc.com
+DOMAIN-SUFFIX,tfbgddd.com
+DOMAIN-SUFFIX,tfbgeee.com
+# chunklist_tfboy系列
+DOMAIN-SUFFIX,tfboyaaa.com
+DOMAIN-SUFFIX,tfboyaab.com
+DOMAIN-SUFFIX,tfboyaac.com
+DOMAIN-SUFFIX,tfboyaad.com
+DOMAIN-SUFFIX,tfboyaae.com
+# chunklist_deni系列
+DOMAIN-SUFFIX,deniest.com
+DOMAIN-SUFFIX,dentisest.com
+# chunklist_cloud系列
+DOMAIN-SUFFIX,cloudios.vip
+DOMAIN-SUFFIX,cloudmac.vip
+DOMAIN-SUFFIX,cloudcook.vip
+DOMAIN-SUFFIX,cloudcool.vip
+DOMAIN-SUFFIX,cloudforfun.vip
+DOMAIN-SUFFIX,cloudlin.vip
+DOMAIN-SUFFIX,cloudshein.vip
+DOMAIN-SUFFIX,cloudjojo.vip
+# chunklist_etc系列
+DOMAIN-SUFFIX,etcbba.xyz
+DOMAIN-SUFFIX,etcbbb.xyz
+DOMAIN-SUFFIX,etcbbc.xyz
+DOMAIN-SUFFIX,etcbbd.xyz
+DOMAIN-SUFFIX,etcbbe.xyz
+DOMAIN-SUFFIX,etcbbf.xyz
+DOMAIN-SUFFIX,etcbbg.xyz
+DOMAIN-SUFFIX,etcbbh.xyz
+DOMAIN-SUFFIX,etcbbi.xyz
+DOMAIN-SUFFIX,etcbbj.xyz
 # anygate为爱壹帆的app分发平台
 DOMAIN-SUFFIX,anygate.vip
+# 午夜版
+DOMAIN-SUFFIX,wyav.tv
