@@ -1,5 +1,7 @@
-# 规则名称: add_rule
+# 规则名称: 爱壹帆
 DOMAIN-SUFFIX,yfsp.tv
 DOMAIN-SUFFIX,pipecdn.vip
-DOMAIN-SUFFIX,substackcdn.com
-DOMAIN-SUFFIX,substack.com
+DOMAIN-SUFFIX,bbbdata.xyz
+DOMAIN-SUFFIX,uutestc.com
+# anygate为爱壹帆的app分发平台
+DOMAIN-SUFFIX,anygate.vip
