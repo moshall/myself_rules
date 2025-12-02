@@ -1,5 +1,7 @@
-# 规则名称: 爱壹帆
+# 规则名称: 爱壹帆-主域名
 DOMAIN-SUFFIX,yfsp.tv
+DOMAIN-SUFFIX,iyf.tv
+# 规则名称: 爱壹帆-主CDN
 DOMAIN-SUFFIX,pipecdn.vip
 # chunklist_暂无规律系列
 DOMAIN-SUFFIX,arebyte.xyz
