@@ -3,7 +3,6 @@ DOMAIN-SUFFIX,yfsp.tv
 DOMAIN-SUFFIX,iyf.tv
 # 规则名称: 爱壹帆-主CDN
 DOMAIN-SUFFIX,pipecdn.vip
-DOMAIN-SUFFIX,dudupro.com
 DOMAIN-SUFFIX,generalcdn.com
 # chunklist_暂无规律系列
 DOMAIN-SUFFIX,arebyte.xyz
@@ -11,6 +10,7 @@ DOMAIN-SUFFIX,bytwogeneral.com
 DOMAIN-SUFFIX,bitwayeat.com
 DOMAIN-SUFFIX,bbbdata.xyz
 DOMAIN-SUFFIX,cuagainmetargdt.com
+DOMAIN-SUFFIX,dudupro.com
 DOMAIN-SUFFIX,doaminwhole.com
 DOMAIN-SUFFIX,waytogone.com
 DOMAIN-SUFFIX,timeprecei.com
